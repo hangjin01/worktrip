@@ -1005,7 +1005,7 @@ const App: React.FC = () => {
         <div className="bg-white shadow-sm sticky top-0 z-30 px-4 py-3 flex items-center justify-between">
             <h1 className="text-xl font-black tracking-tight text-indigo-900 flex items-center gap-2">
             <IconGlobe className="w-6 h-6 text-indigo-600" />
-            <span>Work Trip</span>
+            <span>O1BO</span>
             </h1>
             <div className="flex items-center space-x-2">
                 <button 
