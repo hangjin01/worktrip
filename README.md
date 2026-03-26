@@ -1,20 +1,76 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# O1BO - 스마트 출장 관리 및 근태 확인 시스템
 
-# Run and deploy your AI Studio app
+O1BO는 기업의 사원들이 출장 일정을 관리하고 경비를 정산하며, 관리자(사장님)가 사원들의 현장 체크인/체크아웃 상태를 실시간으로 확인할 수 있는 스마트 출장 관리 어플리케이션입니다. AI 기술을 활용하여 일정 생성 및 영수증 처리를 자동화하고, 철저한 데이터 분리를 통해 사원의 개인 프라이버시를 강력하게 보호합니다.
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/b5c942e7-fb9e-457d-b6ae-d2b6f30b5259
+## 🌟 주요 기능 (Key Features)
 
-## Run Locally
+### 1. 일반 사용자 (사원) 기능
+* **출장 일정 관리:** 목적지, 기간, 목적 등을 입력하여 출장 일정을 생성하고 관리할 수 있습니다.
+* **스마트 체크인/체크아웃:** 출장지 도착 및 출발 시 GPS 위치 정보를 기반으로 체크인과 체크아웃을 기록합니다.
+* **경비 관리 및 영수증 OCR:** 지출 내역을 기록하고, 영수증 사진을 업로드하면 AI가 자동으로 금액, 날짜, 사용처 등을 분석하여 입력해 줍니다.
+* **AI 출장 일정 생성:** 챗봇에게 "도쿄 2박 3일 출장 일정 짜줘"라고 입력하면 AI가 자동으로 최적의 일정을 생성해 줍니다.
+* **자동 보고서 생성 및 이메일 발송:** 출장 일정, 체크인 기록, 경비 내역을 종합하여 깔끔한 마크다운 형태의 보고서를 생성하고, 지정된 이메일로 바로 발송할 수 있습니다.
+* **회사 연동 (초대 코드):** 관리자가 발급한 '회사 코드'를 앱 홈 화면에서 입력하여 소속 회사에 가입할 수 있습니다.
 
-**Prerequisites:**  Node.js
+### 2. 관리자 (사장님) 기능
+* **초대 코드(회사 코드) 발급:** 관리자 계정 생성 시 고유한 6자리 영문/숫자 조합의 회사 코드가 자동 발급됩니다.
+* **어드민 대시보드:** 소속 사원들의 최근 체크인 및 체크아웃 기록을 실시간 타임라인 형태로 확인할 수 있습니다.
+* **근태 모니터링:** 직원이 어느 장소에서 언제 업무를 시작(체크인)하고 종료(체크아웃)했는지 파악할 수 있습니다.
 
+---
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## ⚙️ 시스템 작동 방식 (How it Works)
+
+### 회사 코드 연동 시스템 (Company Code System)
+1. **관리자 가입:** 사장님이 구글 계정으로 로그인하면, 시스템이 자동으로 `admin` 권한과 함께 고유한 `companyCode`를 부여합니다.
+2. **코드 공유:** 사장님은 어드민 대시보드에 표시된 6자리 코드를 사원들에게 메신저 등으로 공유합니다.
+3. **사원 등록:** 사원이 앱에 로그인하면 홈 화면 상단에 **'회사 코드' 입력란**이 나타납니다. 코드를 입력하고 참여하면 해당 사원의 계정 정보에 `companyCode`가 등록되어 두 계정이 논리적으로 연결됩니다.
+
+### 데이터 흐름 (Data Flow)
+* 사원이 출장지에서 **체크인/체크아웃** 버튼을 누르면, 해당 기록(`checkIns` 컬렉션)에 사원의 `companyCode`가 함께 저장됩니다.
+* 관리자의 대시보드는 Firestore 데이터베이스에서 **자신의 회사 코드와 일치하는 체크인/체크아웃 기록만**을 실시간으로 불러와 화면에 렌더링합니다.
+
+---
+
+## 🔒 보안 및 데이터 프라이버시 (Security & Data Privacy)
+
+본 시스템의 가장 핵심적인 설계 철학은 **"사원의 프라이버시 보호와 관리자의 필요 정보(근태)의 완벽한 분리"**입니다.
+
+### 1. 철저한 데이터 분리 원칙 (Data Segregation)
+* **공유되는 데이터:** 오직 **체크인/체크아웃 시간 및 장소(`checkIns`)** 데이터만 관리자와 공유됩니다. 이는 업무 수행 여부를 확인하기 위한 최소한의 근태 정보입니다.
+* **절대 공유되지 않는 데이터:** 사원의 **출장 세부 일정(`trips`)**, **개인 메모**, **경비 지출 내역(`expenses`)**, **영수증 사진** 등은 철저한 개인 정보로 취급되어 데이터베이스 저장 단계부터 회사 코드와 연동되지 않습니다.
+
+### 2. 강력한 Firestore 보안 규칙 (Security Rules)
+프론트엔드에서의 숨김 처리가 아닌, 백엔드(Firestore) 단에서 원천적으로 접근을 차단하는 보안 규칙을 적용했습니다.
+
+* **개인 데이터 (Trips, Expenses):**
+  ```javascript
+  match /trips/{tripId} {
+    // 오직 문서를 생성한 본인(userId)만 읽고, 쓰고, 수정하고, 삭제할 수 있습니다.
+    // 관리자(admin)라 할지라도 다른 사람의 출장이나 경비 데이터에는 절대 접근할 수 없습니다.
+    allow read, create, update, delete: if isAuthenticated() && request.auth.uid == resource.data.userId;
+  }
+  ```
+* **근태 데이터 (Check-ins):**
+  ```javascript
+  match /checkIns/{checkInId} {
+    // 본인이거나, 해당 기록의 회사 코드와 일치하는 관리자(isCompanyAdmin)만 읽을 수 있습니다.
+    allow read: if isAuthenticated() && (request.auth.uid == resource.data.userId || (resource.data.companyCode != null && isCompanyAdmin(resource.data.companyCode)));
+  }
+  ```
+
+### 3. 권한 탈취 및 변조 방지
+* **역할(Role) 보호:** 사원이 임의로 자신의 권한을 `admin`으로 변경하거나, 다른 회사의 코드로 데이터를 조작할 수 없도록 데이터 쓰기(Create/Update) 시 엄격한 스키마 검증(`isValidUser`, `isValidCheckIn` 등)을 거칩니다.
+* **소유권 검증:** 모든 데이터는 생성 시 현재 로그인한 사용자의 UID(`request.auth.uid`)와 일치해야만 저장이 허용됩니다.
+
+---
+
+## 🛠 기술 스택 (Tech Stack)
+
+* **Frontend:** React 18, TypeScript, Tailwind CSS, Vite
+* **Backend/BaaS:** Firebase (Authentication, Firestore Database)
+* **AI Integration:** Google Gemini API (텍스트 기반 일정 생성, 이미지 기반 영수증 OCR)
+* **Mapping:** Leaflet, React-Leaflet
+* **Icons:** Lucide React
